@@ -1,0 +1,63 @@
+/* Query 1 First Question */
+
+
+SELECT F.title , C.name , COUNT(rental_id) AS Rental_Count
+FROM category C
+JOIN film_category FC
+ON C.category_id = FC.category_id
+AND C.name IN ('Animation', 'Children', 'Classics', 'Comedy', 'Family', 'Music')
+
+JOIN film f
+ON f.film_id = FC.film_id
+JOIN inventory i
+ON i.film_id = FC.film_id
+JOIN rental r
+ON r.inventory_id = i.inventory_id
+
+GROUP BY F.title , C.name
+ORDER BY C.name , F.title;
+
+
+
+
+/* Query 2 Secound Question */
+SELECT * , NTILE(4) OVER (ORDER BY S.rental_duration) AS Standaed_Quartile 
+FROM ( 
+  SELECT F.title , F.rental_duration , C.name 
+  FROM category c
+  JOIN film_category FC 
+  ON C.category_id = FC.category_id
+  JOIN film F 
+  ON F.film_id = FC.film_id
+  ORDER BY C.name , F.title)S;
+
+
+/* Query 3 Third Question */
+SELECT s.name , s.Standard_Quartile , COUNT(*)
+FROM 
+(SELECT C.name ,
+ NTILE(4) OVER (ORDER BY F.rental_duration) AS 
+Standard_Quartile ,F.rental_duration 
+    FROM category C
+    JOIN film_category FC
+    ON C.category_id = FC.category_id
+    AND C.name IN ('Animation', 'Children', 'Classics', 'Comedy', 'Family', 'Music')
+
+    JOIN film F
+    ON F.film_id = FC.film_id)s
+GROUP BY s.name , s.standard_quartile
+ORDER BY s.name , s.standard_quartile;
+
+
+/* Query 4 Fourth Question */
+SELECT DATE_PART('month', R.rental_date) Rental_month ,
+DATE_PART('year' , R.rental_date) Rental_year,
+('store ' || S.store_id) store,
+COUNT(*)
+FROM store S
+JOIN staff SF
+ON S.store_id = SF.store_id 
+JOIN rental R
+ON SF.staff_id = R.staff_id
+GROUP BY Rental_month , Rental_year , store
+ORDER BY Rental_month , Rental_year;
